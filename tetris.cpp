@@ -15,7 +15,6 @@ edir dir;
 bool filled [10][20] = {false};
 
 bool match = false;
-bool test = false;
 
 //Setup function
 void setup() {
@@ -52,10 +51,6 @@ void draw() {
     }
     //Print score
     mvprintw(23,0,"Score %d",score);
-
-    if(test) {
-        mvprintw(26, 25, "Yes");
-    }
     refresh();
 
     return;
@@ -96,13 +91,13 @@ void logic() {
     //Changing the direction of the snake
     switch(dir) {
         case LEFT:
-            if(y != 1) {
+            if(y != 1 && filled[x][y-1] != true) {
                 y--;
             }
             dir = DOWN;
             break;
         case RIGHT:
-            if(y != width-2) {
+            if(y != width-2 && filled[x][y+1] != true) {
                 y++;
             }
             dir = DOWN;
@@ -135,7 +130,6 @@ void logic() {
             }
             for(int k = 0; k < i; k++) {
                 for(int l = 0; l < width; l++) {
-
                     filled[i-k+1][l] = filled[i-k][l];
                 }
             }
