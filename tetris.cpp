@@ -2,14 +2,17 @@
 
 #include <cstdlib>
 #include <ncurses.h>
+#include <unistd.h>
+#include "tetris.h"
 
 bool game_over;
 int width = 12, height = 22;
 int x = 1;
 int y = 5;
 int score;
+int ctr = 0;
 //Enum for Direction
-enum edir {STOP=0, LEFT, RIGHT, DOWN};
+enum edir {STOP=0, LEFT, RIGHT, DOWN, DROP};
 edir dir;
 //Array of bools to see if the position is taken
 bool filled [10][20] = {false};
@@ -60,7 +63,7 @@ void draw() {
 void input() {
     //Keypad and speed of the game
     keypad(stdscr, TRUE);
-    halfdelay(1);
+    halfdelay(2);
 
     //Input key
     int key = getch();
@@ -68,16 +71,19 @@ void input() {
     //Switch case to change to the intended direction
     switch(key) {
         case KEY_LEFT:
-            //Check that the snake does not go into itself
+            //Set direction to left
             if (dir != RIGHT) {
                 dir = LEFT;
             }
             break;
         case KEY_RIGHT:
-            //Check that the snake does not go into itself
+            //Set direction to right
             if (dir != LEFT) {
                 dir = RIGHT;
             }
+            break;
+        case KEY_DOWN:
+            dir = DROP;
             break;
         //Quit key (Q)
         case 113:
@@ -88,7 +94,7 @@ void input() {
 
 //Logic function
 void logic() {
-    //Changing the direction of the snake
+    //Changing the direction of the block
     switch(dir) {
         case LEFT:
             if(y != 1 && filled[x][y-1] != true) {
@@ -105,6 +111,15 @@ void logic() {
         case DOWN:
             x++;
             break;
+        case DROP:
+            for(int i = x; i <= height-1; i++) {
+                if(filled[i][y] == true || i == height-1) {
+                    x = i-1;
+                    filled[x][y] = true;
+                }
+            }
+            dir = DOWN;
+            break;
         default:
             break;
     }
@@ -116,6 +131,11 @@ void logic() {
         y = 5;
     }
 
+    return;
+}
+
+//Check function
+void check() {
     //Check if their is a row match
     for(int i = 0; i < height; i++) {
         match = true;
@@ -125,6 +145,12 @@ void logic() {
             }
         }
         if (match == true) {
+            //Time delay to delete a row match
+            usleep(100000);
+
+            //counter increment to multiply score
+            ctr++;
+
             for(int j = 0; j < width; j++) {
                 filled[i][j] = false;
             }
@@ -133,16 +159,16 @@ void logic() {
                     filled[i-k+1][l] = filled[i-k][l];
                 }
             }
-            score++;
+            score = score + (ctr*100);
         }
     }
 
+    //Check for game over
     for(int i = 0; i < width; i ++) {
         if (filled[2][i]) {
             game_over = true;
         }
     }
-
     return;
 }
 
@@ -152,9 +178,13 @@ int main() {
     
     while(!game_over) {
         draw();
+        check();
         input();
         logic();
     }
+    clear();
+    mvprintw(0,0,"Game Over!!");
+    usleep(1000000);
     
    getch();
    endwin();
