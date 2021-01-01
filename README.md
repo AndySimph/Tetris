@@ -1,4 +1,4 @@
-# Tetris (Mac OS)
+# Tetris (Linux)
 ASCII Tetris
 
-Tetris game created using c++ on Mac systems.
+Tetris game created using c++ on Linuz systems.
